@@ -135,13 +135,13 @@
     </div>
 
     <div class="main-container">
-        <h1>English Grammar Matrix</h1>
+        <h1>Брат введи своє ім'я з букви Я...</h1>
         <p>Введи ім'я та захисний код для доступу.</p>
 
         <form onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="username">Ім'я:</label>
-                <input type="text" id="username" required placeholder="Ігор">
+                <input type="text" id="username" required placeholder="Ярослав">
             </div>
 
             <div class="form-group">
@@ -150,7 +150,7 @@
             </div>
 
             <button type="submit" class="btn-start">Увійти →</button>
-            <div id="errorBox" class="error-msg">Помилка! Спробуй ще раз.</div>
+            <div id="errorBox" class="error-msg">Вхід заборонено! Невірне ім'я або пароль.</div>
         </form>
     </div>
 
@@ -162,12 +162,13 @@
             let code = document.getElementById("secret-code").value.trim();
             let errorBox = document.getElementById("errorBox");
 
-            if (name !== "ігор" || code !== "1111") {
+            // Перевірка: ім'я має бути "ярослав" (починається з Я) і пароль "1995"
+            if (name !== "ярослав" || code !== "1995") {
                 errorBox.style.display = "block";
                 return;
             }
 
-            localStorage.setItem("user_name", "Ігор");
+            localStorage.setItem("user_name", "Ярослав");
             window.location.href = "/board";
         }
     </script>
