@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>English Grammar Matrix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 30px 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 4px 4px 0px #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .top-timer-bar {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .card-timer-widget {
+            display: none;
+            background: white;
+            padding: 6px 14px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #0077ed;
+            font-family: monospace;
+            box-shadow: 2px 2px 0px #333;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.4;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #0077ed;
+        }
+
+        .btn-start {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #0077ed;
+            color: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px #333;
+            text-decoration: none;
+            transition: 0.1s;
+            margin-top: 10px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .btn-start:hover {
+            background-color: #005bb5;
+        }
+
+        .btn-start:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #333;
+        }
+
+        .error-msg {
+            color: #e53e3e;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-timer-bar">
+        <div class="card-timer-widget">
+            ⏱️ <span id="card-timer-display">20:00</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h1>English Grammar Matrix</h1>
+        <p>Введи ім'я та захисний код для доступу.</p>
+
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Ім'я:</label>
+                <input type="text" id="username" required placeholder="Ігор">
+            </div>
+
+            <div class="form-group">
+                <label for="secret-code">Код:</label>
+                <input type="password" id="secret-code" required placeholder="••••">
+            </div>
+
+            <button type="submit" class="btn-start">Увійти →</button>
+            <div id="errorBox" class="error-msg">Помилка! Спробуй ще раз.</div>
+        </form>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+
+            let name = document.getElementById("username").value.trim().toLowerCase();
+            let code = document.getElementById("secret-code").value.trim();
+            let errorBox = document.getElementById("errorBox");
+
+            if (name !== "ігор" || code !== "1111") {
+                errorBox.style.display = "block";
+                return;
+            }
+
+            localStorage.setItem("user_name", "Ігор");
+            window.location.href = "/board";
+        }
+    </script>
+
+</body>
+</html>

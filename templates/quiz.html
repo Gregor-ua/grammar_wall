@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: {{ card.title if card else card_id }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            max-width: 750px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            color: #0077ed;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .card-timer-widget {
+            background: #fff;
+            padding: 6px 14px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #0077ed;
+            font-family: monospace;
+            box-shadow: 2px 2px 0px #333;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin: 15px 0 5px 0;
+        }
+
+        .question-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1.5px solid #cbd5e0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-label:hover {
+            border-color: #0077ed;
+            background-color: #f0f7ff;
+        }
+
+        .option-label input {
+            margin-right: 12px;
+        }
+
+        .btn-submit {
+            background: #0077ed;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #005bb5;
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .result-box.success {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result-box.warning {
+            background-color: #feebc8;
+            color: #744210;
+        }
+
+        #time-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .time-up-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            border: 3px solid #333;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 6px 6px 0px #333;
+        }
+
+        .time-up-modal h2 {
+            color: #e53e3e;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .time-up-modal p {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .time-up-modal a {
+            display: inline-block;
+            background: #0077ed;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid #333;
+            box-shadow: 3px 3px 0px #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        <a href="/card/{{ card_id }}" class="back-link">← Назад до картки</a>
+        <div class="card-timer-widget">
+            ⏱️ <span id="card-timer-display">02:00</span>
+        </div>
+    </div>
+
+    <h1>Тест: {{ card.title if card else card_id }}</h1>
+
+    <form id="quizForm">
+        {% for q in questions %}
+        <div class="question-card">
+            <div class="question-title">{{ loop.index }}. {{ q.question }}</div>
+            <div class="options">
+                {% for option in q.options %}
+                <label class="option-label">
+                    <input type="radio" name="q{{ q.id }}" value="{{ option }}">
+                    {{ option }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="button" class="btn-submit" onclick="checkAnswers()">Завершити тест</button>
+    </form>
+
+    <div id="resultBox" class="result-box"></div>
+</div>
+
+<div id="time-up-overlay">
+    <div class="time-up-modal">
+        <h2>⏱️ Час вичерпано!</h2>
+        <p>Час закінчився, на сьогодні досить.</p>
+        <a href="/card/{{ card_id }}">Повернутися до картки</a>
+    </div>
+</div>
+
+<script>
+    const answersMap = {{ answers_map | tojson }};
+
+    function checkAnswers() {
+        let score = 0;
+        const total = Object.keys(answersMap).length;
+
+        Object.keys(answersMap).forEach((qId) => {
+            const selected = document.querySelector(`input[name="q${qId}"]:checked`);
+            if (selected && selected.value === answersMap[qId]) {
+                score++;
+            }
+        });
+
+        const resultBox = document.getElementById('resultBox');
+        resultBox.style.display = 'block';
+
+        const passThreshold = Math.ceil(total * 0.7);
+
+        if (score >= passThreshold) {
+            resultBox.className = 'result-box success';
+            resultBox.innerText = `Чудовий результат! Ви відповіли правильно на ${score} з ${total} питань. 🎉`;
+
+            // Зберігаємо прогрес для системи повторень на сервері
+            fetch('/api/save_score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ card_id: "{{ card_id }}", score: score })
+            });
+
+        } else {
+            resultBox.className = 'result-box warning';
+            resultBox.innerText = `Ваш результат: ${score} з ${total}. Рекомендуємо повторити правило! 📚`;
+        }
+    }
+
+    function updateCardTimer() {
+        let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
+        let endTime = localStorage.getItem("study_end_time_2min");
+        let display = document.getElementById("card-timer-display");
+
+        if (!isRunning || !endTime) {
+            if (display) display.textContent = "02:00";
+            return;
+        }
+
+        let timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        if (display) {
+            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        if (timeLeft <= 0) {
+            localStorage.setItem("study_timer_running_2min", "false");
+            localStorage.removeItem("study_end_time_2min");
+            document.getElementById("time-up-overlay").style.display = "flex";
+        }
+    }
+
+    setInterval(updateCardTimer, 1000);
+    updateCardTimer();
+</script>
+
+</body>
+</html>

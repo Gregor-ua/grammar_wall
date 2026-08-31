@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Дошка часів</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 119, 237, 0.3);
+            border-color: #0077ed;
+        }
+
+        .study-timer-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border: 2px solid #333;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 3px 3px 0px #333;
+        }
+        #timer-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0077ed;
+            font-family: monospace;
+        }
+        #timer-btn {
+            background: #0077ed;
+            color: white;
+            border: 2px solid #333;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #333;
+            transition: 0.1s;
+        }
+        #timer-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #0077ed;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+
+        #time-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .time-up-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            border: 3px solid #333;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 6px 6px 0px #333;
+        }
+
+        .time-up-modal h2 {
+            color: #e53e3e;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .time-up-modal p {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .time-up-modal a {
+            display: inline-block;
+            background: #0077ed;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid #333;
+            box-shadow: 3px 3px 0px #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="/">← На головну</a>
+        <h1>Стіна з граматикою</h1>
+
+        <div class="study-timer-container">
+            <div>
+                <span style="font-size: 14px; color: #666; display: block;">⏱️ Фокус-сесія навчання</span>
+                <div id="timer-display">02:00</div>
+            </div>
+            <button id="timer-btn" onclick="toggleTimer()">🚀 Запустити сесію</button>
+        </div>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        {% if reminders %}
+            <div style="background: #fff3cd; border: 2px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
+                <h3 style="margin: 0 0 10px 0; color: #856404;">📌 Час повторити матеріали:</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #856404;">
+                    {% for msg in reminders %}
+                        <li>{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="grid">
+            {% for card_id, card in cards.items() %}
+                <div class="card">
+                    <h3>{{ card.title }}</h3>
+                    <p><strong>Формула:</strong> {{ card.formula }}</p>
+                    <a href="/card/{{ card_id }}" style="color: #0077ed; font-weight: bold; text-decoration: none;">Відкрити листочок →</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="time-up-overlay">
+        <div class="time-up-modal">
+            <h2>⏱️ Час вичерпано!</h2>
+            <p>Час закінчився, на сьогодні досить.</p>
+            <a href="/">На головну</a>
+        </div>
+    </div>
+
+    <script>
+        let totalTime = 120;
+
+        function getEndTime() {
+            let endTime = localStorage.getItem("study_end_time_2min");
+            let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
+            if (!endTime && isRunning) {
+                endTime = Date.now() + totalTime * 1000;
+                localStorage.setItem("study_end_time_2min", endTime);
+            }
+            return endTime ? parseInt(endTime) : null;
+        }
+
+        function updateTimer() {
+            let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
+            let endTime = getEndTime();
+            let display = document.getElementById("timer-display");
+            let btn = document.getElementById("timer-btn");
+
+            if (!isRunning || !endTime) {
+                if (display) display.textContent = "02:00";
+                if (btn) {
+                    btn.textContent = "🚀 Запустити сесію";
+                    btn.style.background = "#0077ed";
+                }
+                return;
+            }
+
+            let timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+
+            if (display) {
+                display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            if (btn) {
+                btn.textContent = "⏹ Зупинити";
+                btn.style.background = "#d9534f";
+            }
+
+            if (timeLeft <= 0) {
+                localStorage.setItem("study_timer_running_2min", "false");
+                localStorage.removeItem("study_end_time_2min");
+                document.getElementById("time-up-overlay").style.display = "flex";
+            }
+        }
+
+        function toggleTimer() {
+            let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
+            if (!isRunning) {
+                let endTime = Date.now() + totalTime * 1000;
+                localStorage.setItem("study_end_time_2min", endTime);
+                localStorage.setItem("study_timer_running_2min", "true");
+            } else {
+                resetTimer();
+            }
+            updateTimer();
+        }
+
+        function resetTimer() {
+            localStorage.removeItem("study_end_time_2min");
+            localStorage.setItem("study_timer_running_2min", "false");
+            updateTimer();
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+</body>
+</html>
