@@ -2,174 +2,263 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>English Grammar Matrix</title>
+    <title>English Grammar Matrix - Foggy Autumn Style</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 30px 20px;
-            background-color: #f4f4f9;
+            padding: 0;
+            width: 1600px;
+            height: 1200px;
+            overflow: hidden;
+            background-color: #120d0b;
+            color: #f5ebe0;
+        }
+
+        /* Повноекранний банер (фіксований під 1600x1200) */
+        .hero-banner {
+            position: relative;
+            width: 1600px;
+            height: 1200px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            border: 2px solid #333;
-            border-radius: 12px;
-            padding: 30px;
+            justify-content: space-between;
+            padding: 60px 80px;
             box-sizing: border-box;
-            box-shadow: 4px 4px 0px #333;
-            text-align: center;
-            margin-top: 20px;
         }
 
-        .top-timer-bar {
-            width: 100%;
-            max-width: 450px;
+        /* Локальне фонове зображення з папки static */
+        /* Світле та яскраве фонове зображення */
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(18, 13, 11, 0.15) 0%, rgba(28, 16, 10, 0.4) 100%),
+                        url("{{ url_for('static', filename='autumn.jpg') }}") no-repeat center center/cover;
+            z-index: -2;
+        }
+
+        /* Верхня панель навігації */
+        .hero-nav {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-
-        .card-timer-widget {
-            display: none;
-            background: white;
-            padding: 6px 14px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            color: #0077ed;
-            font-family: monospace;
-            box-shadow: 2px 2px 0px #333;
-        }
-
-        h1 {
-            color: #333;
-            margin-top: 0;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        p {
-            color: #555;
-            font-size: 15px;
-            line-height: 1.4;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .form-group input {
+            justify-content: space-between;
+            align-items: center;
             width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
-            outline: none;
+            max-width: 1440px;
+            margin: 0 auto;
         }
 
-        .form-group input:focus {
-            border-color: #0077ed;
-        }
-
-        .btn-start {
-            display: inline-block;
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
+        .logo {
             font-weight: bold;
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: #fca5a5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            font-size: 15px;
+            color: #d6d3d1;
+        }
+
+        .nav-links span {
             cursor: pointer;
-            background-color: #0077ed;
-            color: white;
-            border: 2px solid #333;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0px #333;
-            text-decoration: none;
-            transition: 0.1s;
-            margin-top: 10px;
-            box-sizing: border-box;
-            text-align: center;
+            transition: color 0.2s;
         }
 
-        .btn-start:hover {
-            background-color: #005bb5;
+        .nav-links span:hover {
+            color: #fca5a5;
         }
 
-        .btn-start:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #333;
-        }
-
-        .error-msg {
-            color: #e53e3e;
+        .btn-top-login {
+            background: rgba(153, 27, 27, 0.3);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            padding: 10px 24px;
+            border-radius: 30px;
+            color: #fca5a5;
             font-size: 14px;
-            font-weight: bold;
-            margin-top: 15px;
-            display: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-top-login:hover {
+            background: rgba(153, 27, 27, 0.5);
+            border-color: rgba(239, 68, 68, 0.8);
+        }
+
+        /* Нижня частина з контентом */
+        .hero-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 60px;
+        }
+
+        .stat-item h3 {
+            margin: 0;
+            font-size: 38px;
+            font-weight: 800;
+            color: #fca5a5;
+            text-shadow: 0 2px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .stat-item p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            color: #a8a29e;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 500;
+        }
+
+        /* Форма входу */
+        .login-box {
+            background: rgba(24, 16, 14, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            padding: 28px;
+            border-radius: 18px;
+            width: 380px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+
+        .login-box label {
+            display: block;
+            font-size: 12px;
+            color: #d6d3d1;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .login-box input {
+            flex: 1;
+            background: rgba(15, 10, 8, 0.7);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: #f5ebe0;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .login-box input::placeholder {
+            color: #78716c;
+        }
+
+        .login-box input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-go {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0 24px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-go:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-go:active {
+            transform: scale(0.96);
+        }
+
+        @media (max-width: 1620px) {
+            body {
+                width: 100vw;
+                height: 100vh;
+            }
+            .hero-banner {
+                width: 100vw;
+                height: 100vh;
+                padding: 30px 40px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="top-timer-bar">
-        <div class="card-timer-widget">
-            ⏱️ <span id="card-timer-display">20:00</span>
+    <div class="hero-banner">
+        <!-- Верхнє меню -->
+        <div class="hero-nav">
+            <div class="logo">
+                <span>🍁</span> WinzyGrammar
+            </div>
+            <div class="nav-links">
+                <span>Курси</span>
+                <span>Практика</span>
+                <span>Блог</span>
+                <span>Про нас</span>
+            </div>
+            <button class="btn-top-login" onclick="document.getElementById('username').focus()">Увійти</button>
         </div>
-    </div>
 
-    <div class="main-container">
-        <h1>Брат введи своє ім'я з букви я... / рік народження</h1>
-        <p>Введи ім'я та захисний код для доступу.</p>
-
-        <form onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label for="username">Ім'я:</label>
-                <input type="text" id="username" required placeholder="Ярослав">
+        <!-- Нижній блок зі статистикою та формою -->
+        <div class="hero-content">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>20K+</h3>
+                    <p>Активних учнів</p>
+                </div>
+                <div class="stat-item">
+                    <h3>12+</h3>
+                    <p>Часів граматики</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>Система Anki</p>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="secret-code">Код:</label>
-                <input type="password" id="secret-code" required placeholder="••••">
+            <!-- Форма входу -->
+            <div class="login-box">
+                <label for="username">Введи своє ім'я:</label>
+                <form onsubmit="handleLogin(event)" class="input-row">
+                    <input type="text" id="username" required placeholder="Наприклад: Ігор">
+                    <button type="submit" class="btn-go">→</button>
+                </form>
             </div>
-
-            <button type="submit" class="btn-start">Увійти →</button>
-            <div id="errorBox" class="error-msg">Вхід заборонено! Невірне ім'я або пароль.</div>
-        </form>
+        </div>
     </div>
 
     <script>
         function handleLogin(event) {
             event.preventDefault();
-
-            let name = document.getElementById("username").value.trim().toLowerCase();
-            let code = document.getElementById("secret-code").value.trim();
-            let errorBox = document.getElementById("errorBox");
-
-            // Перевірка: ім'я має бути "ярослав" (починається з Я) і пароль "1995"
-            if (name !== "ярослав" || code !== "1995") {
-                errorBox.style.display = "block";
-                return;
-            }
-
-            localStorage.setItem("user_name", "Ярослав");
-            window.location.href = "/board";
+            let name = document.getElementById("username").value.trim();
+            if (!name) return;
+            window.location.href = "/set_user/" + encodeURIComponent(name);
         }
     </script>
 

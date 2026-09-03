@@ -6,18 +6,35 @@
     <title>Тест: {{ card.title if card else card_id }}</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-image: url('{{ card.bg_image if card and card.bg_image else url_for("static", filename="autumn.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f5ebe0;
             margin: 0;
             padding: 30px;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
         }
 
         .quiz-container {
-            background: white;
+            background-color: rgba(24, 16, 14, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 2px solid rgba(239, 68, 68, 0.25);
+            box-shadow: 6px 6px 0px #000;
             max-width: 750px;
             width: 100%;
             padding: 40px;
@@ -28,38 +45,43 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #edf2f7;
+            border-bottom: 2px solid rgba(239, 68, 68, 0.25);
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
 
         .back-link {
-            color: #0077ed;
+            color: #fca5a5;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .back-link:hover {
+            text-decoration: underline;
         }
 
         .card-timer-widget {
-            background: #fff;
+            background: rgba(24, 16, 14, 0.85);
             padding: 6px 14px;
-            border: 2px solid #333;
+            border: 2px solid rgba(239, 68, 68, 0.25);
             border-radius: 8px;
             font-size: 15px;
             font-weight: bold;
-            color: #0077ed;
+            color: #fca5a5;
             font-family: monospace;
-            box-shadow: 2px 2px 0px #333;
+            box-shadow: 2px 2px 0px #000;
         }
 
         h1 {
-            color: #2d3748;
+            color: #f5ebe0;
             margin: 15px 0 5px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.7);
         }
 
         .question-card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(15, 10, 8, 0.7);
+            border: 1px solid rgba(239, 68, 68, 0.25);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
@@ -68,7 +90,7 @@
         .question-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1a202c;
+            color: #f5ebe0;
             margin-bottom: 15px;
         }
 
@@ -81,27 +103,30 @@
         .option-label {
             display: flex;
             align-items: center;
-            background: white;
-            border: 1.5px solid #cbd5e0;
+            background: rgba(24, 16, 14, 0.9);
+            border: 1.5px solid rgba(239, 68, 68, 0.25);
             padding: 12px 16px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
+            color: #d6d3d1;
         }
 
         .option-label:hover {
-            border-color: #0077ed;
-            background-color: #f0f7ff;
+            border-color: #ef4444;
+            background-color: rgba(42, 27, 22, 0.9);
+            color: #fff;
         }
 
         .option-label input {
             margin-right: 12px;
+            accent-color: #ef4444;
         }
 
         .btn-submit {
-            background: #0077ed;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
             color: white;
-            border: none;
+            border: 2px solid #b91c1c;
             padding: 14px 28px;
             font-size: 16px;
             font-weight: bold;
@@ -109,11 +134,16 @@
             cursor: pointer;
             width: 100%;
             margin-top: 20px;
-            transition: background 0.2s;
+            box-shadow: 3px 3px 0px #000;
+            transition: 0.1s;
         }
 
         .btn-submit:hover {
-            background: #005bb5;
+            filter: brightness(1.1);
+        }
+        .btn-submit:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
         }
 
         .result-box {
@@ -122,18 +152,45 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 4px 4px 0px #000;
         }
 
         .result-box.success {
-            background-color: #c6f6d5;
-            color: #22543d;
+            background-color: rgba(20, 56, 43, 0.9);
+            color: #6ee7b7;
+            border-color: #059669;
         }
 
         .result-box.warning {
-            background-color: #feebc8;
-            color: #744210;
+            background-color: rgba(69, 26, 3, 0.9);
+            color: #fcd34d;
+            border-color: #d97706;
+        }
+
+        .btn-to-board {
+            display: inline-block;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid #b91c1c;
+            box-shadow: 3px 3px 0px #000;
+            transition: 0.1s;
+        }
+
+        .btn-to-board:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-to-board:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
         }
 
         #time-up-overlay {
@@ -143,46 +200,46 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.75);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
 
         .time-up-modal {
-            background: white;
+            background: #181614;
             padding: 40px;
             border-radius: 16px;
-            border: 3px solid #333;
+            border: 3px solid rgba(239, 68, 68, 0.4);
             text-align: center;
             max-width: 400px;
             width: 90%;
-            box-shadow: 6px 6px 0px #333;
+            box-shadow: 6px 6px 0px #000;
         }
 
         .time-up-modal h2 {
-            color: #e53e3e;
+            color: #ef4444;
             margin-top: 0;
             font-size: 24px;
         }
 
         .time-up-modal p {
             font-size: 18px;
-            color: #2d3748;
+            color: #f5ebe0;
             margin-bottom: 25px;
             font-weight: bold;
         }
 
         .time-up-modal a {
             display: inline-block;
-            background: #0077ed;
+            background: #ef4444;
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            border: 2px solid #333;
-            box-shadow: 3px 3px 0px #333;
+            border: 2px solid #b91c1c;
+            box-shadow: 3px 3px 0px #000;
         }
     </style>
 </head>
@@ -190,7 +247,7 @@
 
 <div class="quiz-container">
     <div class="header">
-        <a href="/card/{{ card_id }}" class="back-link">← Назад до картки</a>
+        <a href="{% if card_id == 'exam_matrix' %}/board{% else %}/card/{{ card_id }}{% endif %}" class="back-link">← Назад до картки</a>
         <div class="card-timer-widget">
             ⏱️ <span id="card-timer-display">02:00</span>
         </div>
@@ -223,7 +280,7 @@
     <div class="time-up-modal">
         <h2>⏱️ Час вичерпано!</h2>
         <p>Час закінчився, на сьогодні досить.</p>
-        <a href="/card/{{ card_id }}">Повернутися до картки</a>
+        <a href="{% if card_id == 'exam_matrix' %}/board{% else %}/card/{{ card_id }}{% endif %}">Повернутися до картки</a>
     </div>
 </div>
 
@@ -244,13 +301,15 @@
         const resultBox = document.getElementById('resultBox');
         resultBox.style.display = 'block';
 
-        const passThreshold = Math.ceil(total * 0.7);
+        const passThreshold = total >= 20 ? 18 : 7;
 
         if (score >= passThreshold) {
             resultBox.className = 'result-box success';
-            resultBox.innerText = `Чудовий результат! Ви відповіли правильно на ${score} з ${total} питань. 🎉`;
+            resultBox.innerHTML = `
+                Чудовий результат! Ви відповіли правильно на ${score} з ${total} питань. 🎉<br>
+                <a href="/board" class="btn-to-board">✅ Перевірка пройдена — на стіну</a>
+            `;
 
-            // Зберігаємо прогрес для системи повторень на сервері
             fetch('/api/save_score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -259,7 +318,7 @@
 
         } else {
             resultBox.className = 'result-box warning';
-            resultBox.innerText = `Ваш результат: ${score} з ${total}. Рекомендуємо повторити правило! 📚`;
+            resultBox.innerHTML = `Ваш результат: ${score} з ${total}. Потрібно мінімум ${passThreshold} балів. Рекомендуємо повторити правило! 📚`;
         }
     }
 

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Нейромережа знань (12 часів)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0b090a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #f5ebe0;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            text-decoration: none;
+            color: #fca5a5;
+            font-weight: bold;
+            background: rgba(24, 16, 14, 0.85);
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 2px 2px 0px #000;
+            transition: 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        #info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(24, 16, 14, 0.9);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            pointer-events: none;
+            box-shadow: 4px 4px 0px #000;
+            z-index: 10;
+        }
+        #info-panel h2 { margin: 0 0 5px 0; color: #fca5a5; font-size: 18px; }
+        #info-panel p { margin: 0; font-size: 14px; color: #d6d3d1; }
+    </style>
+    <!-- Підключаємо Three.js для 3D графіки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <a class="back-link" href="{{ url_for('board') }}">← На дошку часів</a>
+
+    <div id="info-panel">
+        <h2 id="node-title">🧠 Індивідуальна нейромережа знань</h2>
+        <p id="node-desc">Зв'язки та вузли формуються на основі вашого персонального прогресу.</p>
+    </div>
+
+    <script>
+        // Персональні дані поточного користувача з Flask
+        const userProgress = {{ user_progress | tojson | safe }};
+        console.log("Отриманий прогрес користувача:", userProgress);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        camera.position.z = 25;
+
+        const networkGroup = new THREE.Group();
+        scene.add(networkGroup);
+
+        const nodesData = [
+            { id: "present_simple", title: "Present Simple", color: 0xef4444 },
+            { id: "past_simple", title: "Past Simple", color: 0xf59e0b },
+            { id: "future_simple", title: "Future Simple", color: 0x10b981 },
+            { id: "present_continuous", title: "Present Continuous", color: 0x3b82f6 },
+            { id: "past_continuous", title: "Past Continuous", color: 0x8b5cf6 },
+            { id: "future_continuous", title: "Future Continuous", color: 0xec4899 },
+            { id: "present_perfect", title: "Present Perfect", color: 0x06b6d4 },
+            { id: "past_perfect", title: "Past Perfect", color: 0xf97316 },
+            { id: "future_perfect", title: "Future Perfect", color: 0x84cc16 },
+            { id: "present_perfect_continuous", title: "Present Perfect Continuous", color: 0xeab308 },
+            { id: "past_perfect_continuous", title: "Past Perfect Continuous", color: 0xa855f7 },
+            { id: "future_perfect_continuous", title: "Future Perfect Continuous", color: 0x14b8a6 }
+        ];
+
+        const nodeMeshes = [];
+        const sphereRadius = 11;
+
+        // Генерація вузлів з універсальним пошуком ключів у прогресі
+        nodesData.forEach((data, index) => {
+            const phi = Math.acos(-1 + (2 * index) / nodesData.length);
+            const theta = Math.sqrt(nodesData.length * Math.PI) * phi;
+
+            const x = sphereRadius * Math.cos(theta) * Math.sin(phi);
+            const y = sphereRadius * Math.sin(theta) * Math.sin(phi);
+            const z = sphereRadius * Math.cos(phi);
+
+            // Універсальний пошук ключа незалежно від регістру, пробілів чи підкреслень
+            const cleanId = data.id.toLowerCase().replace(/[\s-_]/g, '');
+            const foundKey = Object.keys(userProgress).find(k => k.toLowerCase().replace(/[\s-_]/g, '') === cleanId);
+            const progress = (foundKey ? userProgress[foundKey] : null) || { repetitions: 0 };
+
+            const reps = Math.min(progress.repetitions || 0, 6);
+            const isPassed = reps >= 3;
+
+            // Розмір вузла зростає з кожним повторенням
+            const size = 0.6 + (reps * 0.15);
+            const geometry = new THREE.SphereGeometry(size, 32, 32);
+
+            // Якщо є повторення — використовуємо яскравий колір теми, інакше сірий
+            const materialColor = (reps > 0 || isPassed) ? data.color : 0x3f3f46;
+            const material = new THREE.MeshBasicMaterial({ color: materialColor });
+
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(x, y, z);
+            sphere.userData = {
+                id: data.id,
+                title: data.title,
+                reps: reps,
+                baseColor: materialColor
+            };
+
+            networkGroup.add(sphere);
+            nodeMeshes.push(sphere);
+        });
+
+        // Створення об'ємних і товщаючих синаптичних зв'язків між вузлами
+        for (let i = 0; i < nodeMeshes.length; i++) {
+            for (let j = i + 1; j < nodeMeshes.length; j++) {
+                const posA = nodeMeshes[i].position;
+                const posB = nodeMeshes[j].position;
+                const dist = posA.distanceTo(posB);
+
+                if (dist < 14) {
+                    const repsI = nodeMeshes[i].userData.reps;
+                    const repsJ = nodeMeshes[j].userData.reps;
+                    const totalReps = repsI + repsJ; // Сума повторень двох з'єднаних тем (від 0 до 12)
+
+                    if (totalReps > 0) {
+                        let lineColor = 0x52525b;
+                        let opacity = 0.3;
+
+                        if (totalReps >= 8) {
+                            lineColor = 0x00ffcc; // Яскравий неоновий бірюзовий синапс
+                            opacity = 0.9;
+                        } else if (totalReps >= 4) {
+                            lineColor = 0xf59e0b; // Золотий/оранжевий при середньому прогресі
+                            opacity = 0.6;
+                        }
+
+                        // Фізична товщина циліндра збільшується разом із кількістю повторень
+                        const radius = 0.02 + (totalReps * 0.012);
+
+                        const cylinderGeo = new THREE.CylinderGeometry(radius, radius, dist, 8);
+                        const cylinderMat = new THREE.MeshBasicMaterial({
+                            color: lineColor,
+                            transparent: true,
+                            opacity: opacity
+                        });
+
+                        const cylinder = new THREE.Mesh(cylinderGeo, cylinderMat);
+
+                        // Розміщуємо циліндр рівно між двома нейронами
+                        cylinder.position.copy(posA).add(posB).multiplyScalar(0.5);
+                        cylinder.lookAt(posB);
+                        cylinder.rotateX(Math.PI / 2);
+
+                        networkGroup.add(cylinder);
+                    }
+                }
+            }
+        }
+
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', () => { isDragging = true; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredNode = null;
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                networkGroup.rotation.y += deltaX * 0.005;
+                networkGroup.rotation.x += deltaY * 0.005;
+            }
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodeMeshes);
+
+            const titleEl = document.getElementById('node-title');
+            const descEl = document.getElementById('node-desc');
+
+            if (intersects.length > 0) {
+                const currentIntersected = intersects[0].object;
+
+                if (hoveredNode !== currentIntersected) {
+                    if (hoveredNode) {
+                        hoveredNode.material.color.setHex(hoveredNode.userData.baseColor);
+                        hoveredNode.scale.set(1, 1, 1);
+                    }
+                    hoveredNode = currentIntersected;
+                    hoveredNode.material.color.setHex(0xffffff);
+                    hoveredNode.scale.set(1.3, 1.3, 1.3);
+                }
+
+                titleEl.textContent = `⚡ ${hoveredNode.userData.title}`;
+                descEl.textContent = `Ваших повторень: ${hoveredNode.userData.reps}/6. Клікніть для переходу.`;
+                document.body.style.cursor = 'pointer';
+            } else {
+                if (hoveredNode) {
+                    hoveredNode.material.color.setHex(hoveredNode.userData.baseColor);
+                    hoveredNode.scale.set(1, 1, 1);
+                    hoveredNode = null;
+                }
+                titleEl.textContent = "🧠 Індивідуальна нейромережа знань";
+                descEl.textContent = "Зв'язки та вузли формуються на основі вашого персонального прогресу.";
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        window.addEventListener('click', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodeMeshes);
+
+            if (intersects.length > 0) {
+                window.location.href = `/card/${intersects[0].object.userData.id}`;
+            }
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!isDragging) {
+                networkGroup.rotation.y += 0.002;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

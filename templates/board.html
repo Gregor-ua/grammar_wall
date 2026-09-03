@@ -5,9 +5,14 @@
     <title>Дошка часів</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             padding: 20px;
-            background-color: #f4f4f9;
+            margin: 0;
+            min-height: 100vh;
+            /* Чисте світле фонове зображення без темних градієнтів */
+            background: url("{{ url_for('static', filename='autumn.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #f5ebe0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,49 +31,76 @@
         }
 
         .card {
-            border: 2px solid #ddd;
+            position: relative;
+            border: 2px solid rgba(239, 68, 68, 0.25);
             padding: 15px;
             border-radius: 10px;
-            background-color: #ffffff;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.08);
+            background-color: rgba(24, 16, 14, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 4px 4px 0px #000;
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
             cursor: pointer;
+            overflow: hidden;
         }
 
+        /* Жовта підсвітка і рамка тільки при наведенні */
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 119, 237, 0.3);
-            border-color: #0077ed;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+            border-color: #ef4444;
+        }
+
+        .card-water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(239, 68, 68, 0.35); /* Осінній акцент для шкали води */
+            transition: height 0.5s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
         }
 
         .study-timer-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: white;
-            border: 2px solid #333;
+            background: rgba(24, 16, 14, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(239, 68, 68, 0.25);
             padding: 12px 20px;
             border-radius: 10px;
             margin-top: 15px;
-            box-shadow: 3px 3px 0px #333;
+            box-shadow: 3px 3px 0px #000;
         }
         #timer-display {
             font-size: 28px;
             font-weight: bold;
-            color: #0077ed;
+            color: #fca5a5;
             font-family: monospace;
         }
+
+        .timer-action-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
         #timer-btn {
-            background: #0077ed;
-            color: white;
-            border: 2px solid #333;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #ffffff;
+            border: 2px solid rgba(239, 68, 68, 0.4);
             padding: 10px 18px;
             border-radius: 8px;
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 2px 2px 0px #333;
+            box-shadow: 2px 2px 0px #000;
             transition: 0.1s;
         }
         #timer-btn:active {
@@ -76,11 +108,55 @@
             box-shadow: none;
         }
 
+        .mini-clock-popup {
+            display: none;
+            position: absolute;
+            right: 0;
+            bottom: calc(100% + 15px); /* Вистрибує вище верху картки */
+            background: #181614;
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+            z-index: 999;
+            width: 180px;
+            text-align: center;
+        }
+        .mini-clock-popup span {
+            font-size: 13px;
+            color: #a8a29e;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .mini-clock-popup input {
+            width: 60px;
+            background: #2a1b16;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fff;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .mini-clock-popup button {
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
         .back-link {
             text-decoration: none;
-            color: #0077ed;
+            color: #fca5a5;
             font-weight: bold;
             align-self: flex-start;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
 
         #time-up-overlay {
@@ -90,68 +166,93 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
 
         .time-up-modal {
-            background: white;
+            background: #181614;
             padding: 40px;
             border-radius: 16px;
-            border: 3px solid #333;
+            border: 3px solid rgba(239, 68, 68, 0.4);
             text-align: center;
             max-width: 400px;
             width: 90%;
-            box-shadow: 6px 6px 0px #333;
+            box-shadow: 6px 6px 0px #000;
         }
 
         .time-up-modal h2 {
-            color: #e53e3e;
+            color: #ef4444;
             margin-top: 0;
             font-size: 24px;
         }
 
         .time-up-modal p {
             font-size: 18px;
-            color: #2d3748;
+            color: #f5ebe0;
             margin-bottom: 25px;
             font-weight: bold;
         }
 
         .time-up-modal a {
             display: inline-block;
-            background: #0077ed;
-            color: white;
+            background: #ef4444;
+            color: #ffffff;
             padding: 12px 24px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            border: 2px solid #333;
-            box-shadow: 3px 3px 0px #333;
+            border: 2px solid #b91c1c;
+            box-shadow: 3px 3px 0px #000;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <a class="back-link" href="/">← На головну</a>
-        <h1>Стіна з граматикою</h1>
+        <h1 style="text-shadow: 0 2px 10px rgba(0,0,0,0.6);">Стіна з граматикою</h1>
 
-        <div class="study-timer-container">
-            <div>
-                <span style="font-size: 14px; color: #666; display: block;">⏱️ Фокус-сесія навчання</span>
-                <div id="timer-display">02:00</div>
-            </div>
-            <button id="timer-btn" onclick="toggleTimer()">🚀 Запустити сесію</button>
+        <!-- КНОПКА ПЕРЕХОДУ ДО 3D НЕЙРОМЕРЕЖІ -->
+        <div style="margin-top: 15px;">
+            <a href="/neural" style="background: linear-gradient(135deg, #7c2d12 0%, #451a03 100%); color: #fca5a5; border: 2px solid rgba(239, 68, 68, 0.4); padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: bold; text-decoration: none; box-shadow: 3px 3px 0px #000; display: inline-flex; align-items: center; gap: 8px;">
+                🧠 Відкрити 3D-нейромережу знань
+            </a>
         </div>
 
-        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+        <!-- БЛОК ТАЙМЕРА -->
+        <div class="study-timer-container">
+            <div>
+                <span style="font-size: 14px; color: #a8a29e; display: block;">⏱️ Фокус-сесія навчання</span>
+                <div id="timer-display">02:00</div>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                {% if can_exam %}
+                    <a href="/exam" id="exam-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #11111b; border: 2px solid #b45309; padding: 10px 18px; border-radius: 8px; font-size: 15px; font-weight: bold; text-decoration: none; box-shadow: 2px 2px 0px #000; display: inline-block;">🔥 Іспит матриці</a>
+                {% else %}
+                    <button disabled style="background: rgba(49, 50, 68, 0.6); color: #78716c; border: 2px solid #45475a; padding: 10px 18px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: not-allowed; opacity: 0.7;" title="Доступно, коли всі теми наберуть мінімум 3 повторення">🔒 Іспит заблоковано</button>
+                {% endif %}
+
+                <div class="timer-action-wrapper">
+                    <button id="timer-btn" onclick="handleTimerClick()">⏱️ Встановити таймер</button>
+
+                    <div id="mini-clock-popup" class="mini-clock-popup">
+                        <span>Виберіть час (хв):</span>
+                        <input type="number" id="custom-min-input" min="1" max="60" value="2">
+                        <button onclick="confirmCustomTime()">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid rgba(239, 68, 68, 0.2);">
 
         {% if reminders %}
-            <div style="background: #fff3cd; border: 2px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
-                <h3 style="margin: 0 0 10px 0; color: #856404;">📌 Час повторити матеріали:</h3>
-                <ul style="margin: 0; padding-left: 20px; color: #856404;">
+            <div style="background: rgba(24, 16, 14, 0.85); backdrop-filter: blur(12px); border: 2px solid rgba(239, 68, 68, 0.25); padding: 15px; border-radius: 8px; margin-bottom: 20px; width: 100%; box-sizing: border-box; box-shadow: 3px 3px 0px #000;">
+                <h3 style="margin: 0 0 10px 0; color: #fca5a5;">📌 Час повторити матеріали:</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #f5ebe0;">
                     {% for msg in reminders %}
                         <li>{{ msg }}</li>
                     {% endfor %}
@@ -161,10 +262,19 @@
 
         <div class="grid">
             {% for card_id, card in cards.items() %}
-                <div class="card">
-                    <h3>{{ card.title }}</h3>
-                    <p><strong>Формула:</strong> {{ card.formula }}</p>
-                    <a href="/card/{{ card_id }}" style="color: #0077ed; font-weight: bold; text-decoration: none;">Відкрити листочок →</a>
+                {% set progress_info = user_progress.get(card_id, {}) %}
+                {% set reps = progress_info.get("repetitions", 0) %}
+                {% set water_height = (reps / 6) * 100 %}
+
+                <div class="card" onclick="location.href='/card/{{ card_id }}'">
+                    <div class="card-water" style="height: {{ water_height }}%;"></div>
+
+                    <div class="card-content">
+                        <h3 style="color: #f5ebe0; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">{{ card.title }}</h3>
+                        <p style="color: #d6d3d1;"><strong>Формула:</strong> {{ card.formula }}</p>
+                        <p style="font-size: 13px; color: #fca5a5; margin-bottom: 8px; font-weight: bold;">Повторень: {{ reps }} / 6</p>
+                        <a href="/card/{{ card_id }}" style="color: #fca5a5; font-weight: bold; text-decoration: none;">Відкрити листочок →</a>
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -179,29 +289,26 @@
     </div>
 
     <script>
-        let totalTime = 120;
-
-        function getEndTime() {
-            let endTime = localStorage.getItem("study_end_time_2min");
-            let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
-            if (!endTime && isRunning) {
-                endTime = Date.now() + totalTime * 1000;
-                localStorage.setItem("study_end_time_2min", endTime);
-            }
-            return endTime ? parseInt(endTime) : null;
-        }
+        let totalTime = parseInt(localStorage.getItem("study_custom_total_time")) || 120;
 
         function updateTimer() {
             let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
-            let endTime = getEndTime();
+            let endTime = localStorage.getItem("study_end_time_2min");
             let display = document.getElementById("timer-display");
             let btn = document.getElementById("timer-btn");
 
+            let currentMins = Math.floor(totalTime / 60);
+            let currentSecs = totalTime % 60;
+            let formattedDefault = `${String(currentMins).padStart(2, '0')}:${String(currentSecs).padStart(2, '0')}`;
+
             if (!isRunning || !endTime) {
-                if (display) display.textContent = "02:00";
-                if (btn) {
-                    btn.textContent = "🚀 Запустити сесію";
-                    btn.style.background = "#0077ed";
+                if (display && display.textContent.includes(":") && !isRunning) {
+                    display.textContent = formattedDefault;
+                }
+                if (btn && !isRunning) {
+                    btn.textContent = "⏱️ Встановити таймер";
+                    btn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+                    btn.style.color = "#ffffff";
                 }
                 return;
             }
@@ -215,8 +322,9 @@
             }
 
             if (btn) {
-                btn.textContent = "⏹ Зупинити";
-                btn.style.background = "#d9534f";
+                btn.textContent = "🔄 відновити час";
+                btn.style.background = "#78716c";
+                btn.style.color = "#ffffff";
             }
 
             if (timeLeft <= 0) {
@@ -226,25 +334,53 @@
             }
         }
 
-        function toggleTimer() {
+        function handleTimerClick() {
             let isRunning = localStorage.getItem("study_timer_running_2min") === "true";
+
             if (!isRunning) {
-                let endTime = Date.now() + totalTime * 1000;
-                localStorage.setItem("study_end_time_2min", endTime);
-                localStorage.setItem("study_timer_running_2min", "true");
+                let popup = document.getElementById("mini-clock-popup");
+                popup.style.display = popup.style.display === "block" ? "none" : "block";
             } else {
                 resetTimer();
             }
+        }
+
+        function confirmCustomTime() {
+            let inputVal = parseInt(document.getElementById("custom-min-input").value);
+            if (isNaN(inputVal) || inputVal < 1) inputVal = 1;
+            if (inputVal > 60) inputVal = 60;
+
+            totalTime = inputVal * 60;
+            localStorage.setItem("study_custom_total_time", totalTime);
+
+            document.getElementById("mini-clock-popup").style.display = "none";
+
+            let endTime = Date.now() + totalTime * 1000;
+            localStorage.setItem("study_end_time_2min", endTime);
+            localStorage.setItem("study_timer_running_2min", "true");
+
             updateTimer();
         }
 
         function resetTimer() {
             localStorage.removeItem("study_end_time_2min");
             localStorage.setItem("study_timer_running_2min", "false");
+            document.getElementById("mini-clock-popup").style.display = "none";
+
+            let currentMins = Math.floor(totalTime / 60);
+            document.getElementById("timer-display").textContent = `${String(currentMins).padStart(2, '0')}:00`;
             updateTimer();
         }
 
-        setInterval(updateTimer, 1000);
+        window.addEventListener('click', function(e) {
+            let wrapper = document.querySelector('.timer-action-wrapper');
+            let popup = document.getElementById("mini-clock-popup");
+            if (wrapper && !wrapper.contains(e.target)) {
+                popup.style.display = 'none';
+            }
+        });
+
+        setInterval(updateTimer, 200);
         updateTimer();
     </script>
 </body>

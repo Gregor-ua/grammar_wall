@@ -1,10 +1,64 @@
 {
     "ігор": {
         "past-simple": {
-            "last_passed": "2026-08-29T14:36:17.421988",
-            "next_review": "2026-08-29T14:38:17.422002",
+            "last_passed": "2026-08-31T15:02:38.849603",
+            "next_review": "2026-08-31T15:07:38.849618",
             "score": 7,
             "repetitions": 6
+        },
+        "present-simple": {
+            "last_passed": "2026-09-02T13:17:27.617828",
+            "next_review": "2026-09-05T13:17:27.617828",
+            "score": 7,
+            "repetitions": 2
+        },
+        "future-simple": {
+            "last_passed": "2026-09-02T13:17:44.088712",
+            "next_review": "2026-09-05T13:17:44.088712",
+            "score": 10,
+            "repetitions": 2
+        },
+        "past-continuous": {
+            "last_passed": "2026-09-03T08:57:32.298687",
+            "next_review": "2026-09-04T08:57:32.298687",
+            "score": 7,
+            "repetitions": 1
+        }
+    },
+    "гріша": {
+        "past-simple": {
+            "last_passed": "2026-09-01T10:54:43.376869",
+            "next_review": "2026-09-01T10:59:43.376880",
+            "score": 7,
+            "repetitions": 2
+        }
+    },
+    "грегор": {
+        "past-simple": {
+            "last_passed": "2026-09-01T11:11:13.090845",
+            "next_review": "2026-09-01T11:13:13.090852",
+            "score": 7,
+            "repetitions": 6
+        }
+    },
+    "вася": {
+        "past-simple": {
+            "last_passed": "2026-09-01T11:51:35.043401",
+            "next_review": "2026-09-01T11:53:35.043401",
+            "score": 7,
+            "repetitions": 3
+        },
+        "present-simple": {
+            "last_passed": "2026-09-01T12:16:18.617633",
+            "next_review": "2026-09-01T12:18:18.617633",
+            "score": 7,
+            "repetitions": 3
+        },
+        "future-simple": {
+            "last_passed": "2026-09-01T12:18:11.448673",
+            "next_review": "2026-09-01T12:20:11.448673",
+            "score": 10,
+            "repetitions": 3
         }
     }
 }
